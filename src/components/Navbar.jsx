@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, ChefHat, Menu } from 'lucide-react';
+import { LogOut, UtensilsCrossed, Menu } from 'lucide-react';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 
@@ -29,9 +29,9 @@ export default function Navbar({ onMenuClick }) {
 
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-pink-400 flex items-center justify-center shadow-sm shadow-pink-200">
-                            <ChefHat className="w-4 h-4 text-white" />
+                            <UtensilsCrossed className="w-4 h-4 text-white" />
                         </div>
-                        <span className="text-lg font-bold text-gray-900 tracking-tight hidden sm:block">MessLH</span>
+                        <span className="text-lg font-bold text-gray-900 tracking-tight hidden sm:block">Mess Track</span>
                     </div>
                 </div>
 

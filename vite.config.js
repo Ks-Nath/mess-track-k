@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.svg'],
       manifest: {
-        name: 'MessLH - Ladies Hostel Mess',
-        short_name: 'MessLH',
+        name: 'Mess Track',
+        short_name: 'Mess Track',
         description: 'Manage your hostel mess, leaves, bills and menu',
         theme_color: '#f472b6',
         background_color: '#F9FAFB',

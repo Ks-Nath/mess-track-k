@@ -6,7 +6,6 @@ import {
     CalendarOff,
     Receipt,
     LogOut,
-    ChefHat,
     User,
     Landmark,
 } from 'lucide-react';

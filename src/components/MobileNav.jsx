@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { X, LogOut, ChefHat, User } from 'lucide-react';
+import { X, LogOut, UtensilsCrossed, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
 
@@ -43,9 +43,9 @@ export default function MobileNav({ isOpen, onClose, links, type = 'student' }) 
                     <div className={`h-16 flex items-center justify-between px-6 border-b ${isStudent ? 'border-gray-100' : 'border-slate-800'}`}>
                         <div className="flex items-center gap-2">
                             <div className={`w-8 h-8 rounded-lg ${isStudent ? 'bg-pink-400' : 'bg-pink-400'} flex items-center justify-center`}>
-                                <ChefHat className="w-5 h-5 text-white" />
+                                <UtensilsCrossed className="w-5 h-5 text-white" />
                             </div>
-                            <span className={`font-bold text-lg ${textClass}`}>MessLH</span>
+                            <span className={`font-bold text-lg ${textClass}`}>Mess Track</span>
                         </div>
                         <button onClick={onClose} className={`p-1 rounded-md ${isStudent ? 'text-gray-400 hover:bg-gray-100' : 'text-slate-400 hover:bg-slate-800'}`}>
                             <X className="w-6 h-6" />

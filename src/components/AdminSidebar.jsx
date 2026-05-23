@@ -5,7 +5,6 @@ import {
     UtensilsCrossed,
     Users,
     LogOut,
-    ChefHat,
     Bell,
     FileSpreadsheet,
     Settings,
@@ -39,9 +38,9 @@ export default function AdminSidebar() {
             {/* Brand */}
             <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800">
                 <div className="w-8 h-8 rounded-lg bg-pink-400 flex items-center justify-center">
-                    <ChefHat className="w-4 h-4 text-white" />
+                    <UtensilsCrossed className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-bold tracking-tight text-white">MessLH Admin</span>
+                <span className="text-lg font-bold tracking-tight text-white">Mess Track Admin</span>
             </div>
 
             {/* Navigation */}
