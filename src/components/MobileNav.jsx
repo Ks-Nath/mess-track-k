@@ -42,8 +42,8 @@ export default function MobileNav({ isOpen, onClose, links, type = 'student' }) 
                     {/* Header */}
                     <div className={`h-16 flex items-center justify-between px-6 border-b ${isStudent ? 'border-gray-100' : 'border-slate-800'}`}>
                         <div className="flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-lg ${isStudent ? 'bg-pink-400' : 'bg-pink-400'} flex items-center justify-center`}>
-                                <UtensilsCrossed className="w-5 h-5 text-white" />
+                            <div className={`w-8 h-8 rounded-lg bg-white border ${isStudent ? 'border-gray-200' : 'border-slate-800'} flex items-center justify-center`}>
+                                <UtensilsCrossed className={`w-5 h-5 ${isStudent ? 'text-gray-900' : 'text-slate-900'}`} />
                             </div>
                             <span className={`font-bold text-lg ${textClass}`}>Mess Track</span>
                         </div>

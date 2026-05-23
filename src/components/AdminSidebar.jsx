@@ -37,8 +37,8 @@ export default function AdminSidebar() {
         <aside className="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800 min-h-screen sticky top-0 h-screen text-slate-100">
             {/* Brand */}
             <div className="h-16 flex items-center gap-3 px-6 border-b border-slate-800">
-                <div className="w-8 h-8 rounded-lg bg-pink-400 flex items-center justify-center">
-                    <UtensilsCrossed className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-lg bg-white border border-slate-800 flex items-center justify-center">
+                    <UtensilsCrossed className="w-4 h-4 text-slate-900" />
                 </div>
                 <span className="text-lg font-bold tracking-tight text-white">Mess Track Admin</span>
             </div>

@@ -47,8 +47,8 @@ export default function Login() {
             <div className="w-full max-w-[400px] animate-fade-in">
                 {/* Minimal Logo Header */}
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-pink-400 shadow-sm shadow-pink-200 mb-4">
-                        <UtensilsCrossed className="w-6 h-6 text-white" />
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white border border-gray-200 shadow-sm mb-4">
+                        <UtensilsCrossed className="w-6 h-6 text-gray-900" />
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Mess Track</h1>
                     <p className="text-sm text-gray-500 mt-2">Sign in to your account</p>
