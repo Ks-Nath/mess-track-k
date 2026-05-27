@@ -14,6 +14,7 @@ import AdminSettings from './pages/AdminSettings';
 import VegList from './pages/admin/VegList';
 import Establishment from './pages/Establishment';
 import AdminEstablishment from './pages/admin/Establishment';
+import FoodCount from './pages/admin/FoodCount';
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 import AdminLayout from './layouts/AdminLayout';
@@ -53,6 +54,7 @@ export default function App() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="menu" element={<ManageMenu />} />
                 <Route path="students" element={<ManageStudents />} />
+                <Route path="food-count" element={<FoodCount />} />
                 <Route path="leaves" element={<ManageLeaves />} />
                 <Route path="veg-list" element={<VegList />} />
                 <Route path="bills" element={<AdminBills />} />

@@ -25,17 +25,19 @@ function getMonthsLate(feeMonth, today = getISTDate()) {
     const [fYear, fMonth] = feeMonth.split('-').map(Number);
     const dMonth = fMonth;
     const dYear = fMonth === 12 ? fYear + 1 : fYear;
-    const deadline = new Date(dYear, dMonth % 12, 10, 23, 59, 59);
-    if (today <= deadline) return 0;
+    
+    // Deadline: 1st of the next month at 00:00:00
+    const deadline = new Date(dYear, dMonth % 12, 1, 0, 0, 0);
+    
+    if (today < deadline) return 0;
+    
     const yearDiff = today.getFullYear() - dYear;
     const monthDiff = today.getMonth() - (dMonth % 12);
+    
+    // Total months passed since deadline month.
     const totalMonths = yearDiff * 12 + monthDiff;
     
-    // Safety check: totalMonths should be at least 0 if we passed the deadline check
-    const baseMonthsLate = Math.max(0, totalMonths);
-    
-    // If it's the following month and past the 10th, add that month too
-    return today.getDate() > 10 ? baseMonthsLate + 1 : Math.max(baseMonthsLate, 1);
+    return Math.max(1, totalMonths + 1);
 }
 
 export function EstablishmentProvider({ children }) {
@@ -220,17 +222,36 @@ export function EstablishmentProvider({ children }) {
         
         const months = getMonthsInRange(joinDate, referenceDate);
         let totalFine = 0;
+
         for (const month of months) {
             const isPaid = getPaymentStatus(studentId, month, feeType);
             if (!isPaid) {
-                totalFine += 100 * getMonthsLate(month, referenceDate);
+                totalFine += calculateFineForMonth(month, feeType, referenceDate);
             }
         }
+        
         return totalFine;
     };
 
-    const calculateFineForMonth = (month, referenceDate = getISTDate()) => {
-        return 100 * getMonthsLate(month, referenceDate);
+    const calculateFineForMonth = (month, feeType, referenceDate = getISTDate()) => {
+        let monthsLate = getMonthsLate(month, referenceDate);
+        if (monthsLate === 0) return 0;
+        
+        if (feeType === 'establishment') return 0;
+        
+        if (feeType === 'advance') {
+            return monthsLate >= 1 ? 30 : 0;
+        }
+        
+        if (feeType === 'mess') {
+            // Shift the mess deadline from the 1st to the 5th of the month
+            if (referenceDate.getDate() < 5) {
+                monthsLate -= 1;
+            }
+            return monthsLate >= 2 ? (monthsLate - 1) * 50 : 0;
+        }
+        
+        return 0; // establishment
     };
 
     // Memoize the context value to prevent unnecessary re-renders of consumers

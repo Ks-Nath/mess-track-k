@@ -134,6 +134,30 @@ export function StudentProvider({ children }) {
         }
     };
 
+    const updateStudent = async (messNumber, updates) => {
+        if (!user?.hostelId) return { success: false, error: 'No hostel assigned' };
+
+        try {
+            const { error } = await supabase
+                .from('students')
+                .update({
+                    name: updates.name,
+                    phone: updates.phone,
+                    mess_type: updates.messType,
+                })
+                .eq('mess_number', messNumber)
+                .eq('hostel_id', user.hostelId);
+
+            if (error) throw error;
+
+            await fetchStudents();
+            return { success: true };
+        } catch (error) {
+            console.error('Error updating student:', error);
+            return { success: false, error: error.message };
+        }
+    };
+
     const getStudentByMessNumber = (messNumber) => {
         return students.find(s => s.messNumber === messNumber);
     };
@@ -163,7 +187,7 @@ export function StudentProvider({ children }) {
     };
 
     return (
-        <StudentContext.Provider value={{ students, loading, addStudent, removeStudent, getStudentByMessNumber, updateLegacyFine }}>
+        <StudentContext.Provider value={{ students, loading, addStudent, removeStudent, updateStudent, getStudentByMessNumber, updateLegacyFine }}>
             {children}
         </StudentContext.Provider>
     );

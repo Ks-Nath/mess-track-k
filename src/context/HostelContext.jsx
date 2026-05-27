@@ -10,6 +10,7 @@ export function HostelProvider({ children }) {
         messRate: 140, // Default fallback
         cutoffTime: 20, // Default fallback (8 PM)
         establishmentFee: 800, // Default fallback
+        advanceFee: 500, // Default fallback
         hostelName: '',
         loading: true,
     });
@@ -24,7 +25,7 @@ export function HostelProvider({ children }) {
             try {
                 const { data, error } = await supabase
                     .from('hostels')
-                    .select('name, mess_rate, cutoff_time, establishment_fee, establishment_passcode')
+                    .select('name, mess_rate, cutoff_time, establishment_fee, advance_fee, establishment_passcode')
                     .eq('id', user.hostelId)
                     .single();
 
@@ -40,6 +41,7 @@ export function HostelProvider({ children }) {
                         messRate: data.mess_rate,
                         cutoffTime: data.cutoff_time,
                         establishmentFee: data.establishment_fee ?? 800,
+                        advanceFee: data.advance_fee ?? 500,
                         establishmentPasscode: data.establishment_passcode || 'Code11@10',
                         hostelName: data.name,
                         loading: false,
@@ -66,6 +68,9 @@ export function HostelProvider({ children }) {
             if (newSettings.establishmentFee !== undefined) {
                     updateData.establishment_fee = newSettings.establishmentFee;
                 }
+            if (newSettings.advanceFee !== undefined) {
+                    updateData.advance_fee = newSettings.advanceFee;
+                }
             const { error } = await supabase
                 .from('hostels')
                 .update(updateData)
@@ -79,6 +84,7 @@ export function HostelProvider({ children }) {
                 messRate: newSettings.messRate,
                 cutoffTime: newSettings.cutoffTime,
                 ...(newSettings.establishmentFee !== undefined && { establishmentFee: newSettings.establishmentFee }),
+                ...(newSettings.advanceFee !== undefined && { advanceFee: newSettings.advanceFee }),
             }));
 
             return { success: true };

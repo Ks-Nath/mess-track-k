@@ -13,7 +13,7 @@ export default function AdminBills() {
     const { students, loading: studentsLoading } = useStudents();
     const { getLeavesByDate, loading: leavesLoading } = useLeaves();
     const isLoading = studentsLoading || leavesLoading;
-    const { messRate } = useHostel();
+    const { messRate, establishmentFee } = useHostel();
 
     // Mode: 'month' or 'range'
     const [mode, setMode] = useState('month');
@@ -65,6 +65,7 @@ export default function AdminBills() {
 
         const billableDays = totalDays - leaveCount;
         const totalBill = billableDays * messRate;
+        const finalDue = totalBill + establishmentFee;
 
         return {
             ...student,
@@ -72,11 +73,15 @@ export default function AdminBills() {
             leaveCount,
             billableDays,
             totalBill,
+            establishmentFee,
+            finalDue,
         };
     });
 
     // Grand totals
-    const grandTotal = studentBills.reduce((sum, s) => sum + s.totalBill, 0);
+    const grandTotalBill = studentBills.reduce((sum, s) => sum + s.totalBill, 0);
+    const grandTotalEst = studentBills.reduce((sum, s) => sum + s.establishmentFee, 0);
+    const grandTotalDue = studentBills.reduce((sum, s) => sum + s.finalDue, 0);
     const totalLeaves = studentBills.reduce((sum, s) => sum + s.leaveCount, 0);
 
     const handleDownloadExcel = () => {
@@ -87,7 +92,9 @@ export default function AdminBills() {
             'Total Days': s.totalDays,
             'Leaves Taken': s.leaveCount,
             'Billable Days': s.billableDays,
-            'Total Bill (₹)': s.totalBill,
+            'Mess Bill (₹)': s.totalBill,
+            'Est. Fee (₹)': s.establishmentFee,
+            'Total Due (₹)': s.finalDue,
         }));
 
         // Summary row
@@ -97,7 +104,9 @@ export default function AdminBills() {
             'Total Days': '',
             'Leaves Taken': totalLeaves,
             'Billable Days': '',
-            'Total Bill (₹)': grandTotal,
+            'Mess Bill (₹)': grandTotalBill,
+            'Est. Fee (₹)': grandTotalEst,
+            'Total Due (₹)': grandTotalDue,
         });
 
         const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -109,7 +118,9 @@ export default function AdminBills() {
             { wch: 12 }, // Total Days
             { wch: 14 }, // Leaves Taken
             { wch: 14 }, // Billable Days
-            { wch: 16 }, // Total Bill
+            { wch: 16 }, // Mess Bill
+            { wch: 16 }, // Est. Fee
+            { wch: 16 }, // Total Due
         ];
 
         const workbook = XLSX.utils.book_new();
@@ -333,7 +344,9 @@ export default function AdminBills() {
                                         <th className="px-6 py-4 text-center">Total Days</th>
                                         <th className="px-6 py-4 text-center">Leaves</th>
                                         <th className="px-6 py-4 text-center">Billable Days</th>
-                                        <th className="px-6 py-4 text-right font-bold">Final Bill (₹)</th>
+                                        <th className="px-6 py-4 text-right">Mess Bill (₹)</th>
+                                        <th className="px-6 py-4 text-right">Est. Fee (₹)</th>
+                                        <th className="px-6 py-4 text-right font-bold text-indigo-700">Total Due (₹)</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 bg-white">
@@ -344,7 +357,9 @@ export default function AdminBills() {
                                             <td className="px-6 py-4 text-center text-gray-500">{student.totalDays}</td>
                                             <td className="px-6 py-4 text-center text-amber-600 font-medium">{student.leaveCount}</td>
                                             <td className="px-6 py-4 text-center text-green-600 font-medium">{student.billableDays}</td>
-                                            <td className="px-6 py-4 text-right font-bold text-gray-900">₹{student.totalBill.toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right text-gray-700">₹{student.totalBill.toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right text-gray-700">₹{student.establishmentFee.toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right font-bold text-indigo-700">₹{student.finalDue.toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -356,7 +371,9 @@ export default function AdminBills() {
                                         <td className="px-6 py-4 text-center text-gray-500 font-medium">{totalDays}</td>
                                         <td className="px-6 py-4 text-center text-amber-600 font-bold">{totalLeaves}</td>
                                         <td className="px-6 py-4" />
-                                        <td className="px-6 py-4 text-right font-bold text-gray-900 text-base">₹{grandTotal.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-medium text-gray-700">₹{grandTotalBill.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-medium text-gray-700">₹{grandTotalEst.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-right font-bold text-indigo-700 text-base">₹{grandTotalDue.toLocaleString()}</td>
                                     </tr>
                                 </tfoot>
                             </table>

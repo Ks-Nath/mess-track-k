@@ -8,7 +8,7 @@ import { useStudents } from '../context/StudentContext';
 import { useLeaves } from '../context/LeaveContext';
 
 export default function ManageStudents() {
-    const { students, loading: studentsLoading, addStudent, removeStudent } = useStudents();
+    const { students, loading: studentsLoading, addStudent, updateStudent, removeStudent } = useStudents();
     const { isStudentOnLeave, loading: leavesLoading } = useLeaves();
 
     const loading = studentsLoading || leavesLoading;
@@ -17,11 +17,12 @@ export default function ManageStudents() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('All');
 
-    // Add Student Modal state
-    const [showAddModal, setShowAddModal] = useState(false);
-    const [newStudent, setNewStudent] = useState({ name: '', messNumber: '', phone: '', messType: 'Veg' });
-    const [addError, setAddError] = useState('');
-    const [isAdding, setIsAdding] = useState(false);
+    // Add/Edit Student Modal state
+    const [showModal, setShowModal] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [studentForm, setStudentForm] = useState({ name: '', messNumber: '', phone: '', messType: 'V' });
+    const [modalError, setModalError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const formatDateKey = (date) => {
         if (!(date instanceof Date)) return getISTDateString();
@@ -44,31 +45,60 @@ export default function ManageStudents() {
         return matchesSearch && matchesFilter;
     });
 
-    const handleAddStudent = async (e) => {
-        e.preventDefault();
-        setAddError('');
+    const handleOpenAdd = () => {
+        setIsEditing(false);
+        setStudentForm({ name: '', messNumber: '', phone: '', messType: 'V' });
+        setModalError('');
+        setShowModal(true);
+    };
 
-        if (!newStudent.name.trim() || !newStudent.messNumber.trim() || !newStudent.phone.trim()) {
-            setAddError('All fields are required.');
+    const handleOpenEdit = (student) => {
+        setIsEditing(true);
+        setStudentForm({ 
+            name: student.name, 
+            messNumber: student.messNumber, 
+            phone: student.phone || '', 
+            messType: student.messType || 'V' 
+        });
+        setModalError('');
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setModalError('');
+
+        if (!studentForm.name.trim() || !studentForm.messNumber.trim() || !studentForm.phone.trim()) {
+            setModalError('All fields are required.');
             return;
         }
 
-        setIsAdding(true);
-        const result = await addStudent({
-            name: newStudent.name.trim(),
-            messNumber: newStudent.messNumber.trim().toUpperCase(),
-            phone: newStudent.phone.trim(),
-            messType: newStudent.messType,
-            roomNo: '',
-            messStatus: 'Active',
-        });
-        setIsAdding(false);
+        setIsSubmitting(true);
+        
+        let result;
+        if (isEditing) {
+            result = await updateStudent(studentForm.messNumber.trim().toUpperCase(), {
+                name: studentForm.name.trim(),
+                phone: studentForm.phone.trim(),
+                messType: studentForm.messType,
+            });
+        } else {
+            result = await addStudent({
+                name: studentForm.name.trim(),
+                messNumber: studentForm.messNumber.trim().toUpperCase(),
+                phone: studentForm.phone.trim(),
+                messType: studentForm.messType,
+                roomNo: '',
+                messStatus: 'Active',
+            });
+        }
+        
+        setIsSubmitting(false);
 
         if (result.success) {
-            setNewStudent({ name: '', messNumber: '', phone: '', messType: 'Veg' });
-            setShowAddModal(false);
+            setShowModal(false);
         } else {
-            setAddError(result.error || 'Failed to add student.');
+            setModalError(result.error || `Failed to ${isEditing ? 'update' : 'add'} student.`);
         }
     };
 
@@ -98,7 +128,7 @@ export default function ManageStudents() {
                             onChange={(e) => setSelectedDate(new Date(e.target.value))}
                         />
                     </div>
-                    <Button onClick={() => setShowAddModal(true)} className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button onClick={handleOpenAdd} className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
                         <UserPlus className="w-4 h-4" /> Add Student
                     </Button>
                 </div>
@@ -162,8 +192,8 @@ export default function ManageStudents() {
                                         <td className="px-6 py-4 text-gray-700 font-medium">{student.name}</td>
                                         <td className="px-6 py-4 text-gray-500">{student.phone}</td>
                                         <td className="px-6 py-4">
-                                            <Badge variant="outline" className={student.messType === 'Veg' ? 'text-green-600 border-green-200 bg-green-50' : 'text-red-600 border-red-200 bg-red-50'}>
-                                                {student.messType || 'Veg'}
+                                            <Badge variant="outline" className={student.messType === 'Veg' || student.messType?.startsWith('V') ? 'text-green-600 border-green-200 bg-green-50' : 'text-red-600 border-red-200 bg-red-50'}>
+                                                {student.messType || 'V'}
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-4">
@@ -172,15 +202,26 @@ export default function ManageStudents() {
                                             </Badge>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => handleRemoveStudent(student.messNumber)}
-                                                title="Remove Student"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                            <div className="flex justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                                                    onClick={() => handleOpenEdit(student)}
+                                                    title="Edit Student"
+                                                >
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => handleRemoveStudent(student.messNumber)}
+                                                    title="Remove Student"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -196,8 +237,8 @@ export default function ManageStudents() {
                 </Card>
             )}
 
-            {/* Add Student Modal */}
-            {showAddModal && (
+            {/* Add/Edit Student Modal */}
+            {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
                         {/* Modal Header */}
@@ -206,18 +247,20 @@ export default function ManageStudents() {
                                 <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center">
                                     <UserPlus className="w-4 h-4 text-indigo-600" />
                                 </div>
-                                <h2 className="text-lg font-semibold text-gray-900">Add New Student</h2>
+                                <h2 className="text-lg font-semibold text-gray-900">{isEditing ? 'Edit Student' : 'Add New Student'}</h2>
                             </div>
-                            <button onClick={() => { setShowAddModal(false); setAddError(''); }} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
+                            <button onClick={() => { setShowModal(false); setModalError(''); }} className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors">
                                 <X className="w-4 h-4 text-gray-500" />
                             </button>
                         </div>
 
                         {/* Modal Body */}
-                        <form onSubmit={handleAddStudent} className="p-6 space-y-5">
-                            <p className="text-sm text-gray-500">
-                                The student will log in with their <strong>Mess Number</strong> as username and <strong>Phone Number</strong> as password.
-                            </p>
+                        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                            {!isEditing && (
+                                <p className="text-sm text-gray-500">
+                                    The student will log in with their <strong>Mess Number</strong> as username and <strong>Phone Number</strong> as password.
+                                </p>
+                            )}
 
                             {/* Name */}
                             <div>
@@ -226,8 +269,8 @@ export default function ManageStudents() {
                                     type="text"
                                     placeholder="e.g. Arjun Kumar"
                                     className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                                    value={newStudent.name}
-                                    onChange={(e) => setNewStudent(prev => ({ ...prev, name: e.target.value }))}
+                                    value={studentForm.name}
+                                    onChange={(e) => setStudentForm(prev => ({ ...prev, name: e.target.value }))}
                                     autoFocus
                                 />
                             </div>
@@ -238,11 +281,12 @@ export default function ManageStudents() {
                                 <input
                                     type="text"
                                     placeholder="e.g. MESS-001"
-                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm uppercase"
-                                    value={newStudent.messNumber}
-                                    onChange={(e) => setNewStudent(prev => ({ ...prev, messNumber: e.target.value }))}
+                                    className={cn("w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm uppercase", isEditing && "bg-gray-100 text-gray-500 cursor-not-allowed")}
+                                    value={studentForm.messNumber}
+                                    onChange={(e) => setStudentForm(prev => ({ ...prev, messNumber: e.target.value }))}
+                                    disabled={isEditing}
                                 />
-                                <p className="text-xs text-gray-400 mt-1">This will be the login username</p>
+                                {!isEditing && <p className="text-xs text-gray-400 mt-1">This will be the login username</p>}
                             </div>
 
                             {/* Phone */}
@@ -252,51 +296,60 @@ export default function ManageStudents() {
                                     type="tel"
                                     placeholder="e.g. 9876543210"
                                     className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                                    value={newStudent.phone}
-                                    onChange={(e) => setNewStudent(prev => ({ ...prev, phone: e.target.value }))}
+                                    value={studentForm.phone}
+                                    onChange={(e) => setStudentForm(prev => ({ ...prev, phone: e.target.value }))}
                                 />
-                                <p className="text-xs text-gray-400 mt-1">This will be the login password</p>
+                                {!isEditing && <p className="text-xs text-gray-400 mt-1">This will be the login password</p>}
                             </div>
 
                             {/* Mess Type */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Mess Type</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['Veg', 'Non-Veg'].map(type => (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    {[
+                                        { id: 'V', label: 'Veg' },
+                                        { id: 'N', label: 'Non-Veg' },
+                                        { id: 'V+C', label: 'V + Chicken' },
+                                        { id: 'V+E', label: 'V + Egg' },
+                                        { id: 'V+F', label: 'V + Fish' },
+                                        { id: 'N-C', label: 'N (No Chicken)' },
+                                        { id: 'N-E', label: 'N (No Egg)' },
+                                        { id: 'N-F', label: 'N (No Fish)' },
+                                    ].map(type => (
                                         <button
-                                            key={type}
+                                            key={type.id}
                                             type="button"
-                                            onClick={() => setNewStudent(prev => ({ ...prev, messType: type }))}
+                                            onClick={() => setStudentForm(prev => ({ ...prev, messType: type.id }))}
                                             className={cn(
-                                                "px-4 py-2.5 rounded-lg text-sm font-medium border transition-all",
-                                                newStudent.messType === type
-                                                    ? type === 'Veg'
+                                                "px-2 py-2 rounded-lg text-xs font-medium border transition-all",
+                                                studentForm.messType === type.id
+                                                    ? type.id.startsWith('V')
                                                         ? "bg-green-50 text-green-700 border-green-300 ring-2 ring-green-200"
                                                         : "bg-red-50 text-red-700 border-red-300 ring-2 ring-red-200"
                                                     : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                                             )}
                                         >
-                                            {type}
+                                            {type.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             {/* Error Message */}
-                            {addError && (
+                            {modalError && (
                                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-                                    {addError}
+                                    {modalError}
                                 </div>
                             )}
 
                             {/* Action Buttons */}
                             <div className="flex justify-end gap-3 pt-2">
-                                <Button type="button" variant="outline" onClick={() => { setShowAddModal(false); setAddError(''); }}>
+                                <Button type="button" variant="outline" onClick={() => { setShowModal(false); setModalError(''); }}>
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={isAdding} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
-                                    {isAdding && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {isAdding ? 'Adding...' : 'Add Student'}
+                                <Button type="submit" disabled={isSubmitting} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2">
+                                    {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {isSubmitting ? 'Saving...' : (isEditing ? 'Save Changes' : 'Add Student')}
                                 </Button>
                             </div>
                         </form>

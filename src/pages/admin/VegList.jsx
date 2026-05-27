@@ -17,6 +17,7 @@ export default function VegList() {
     const [attendance, setAttendance] = useState({});
     const [loadingAttendance, setLoadingAttendance] = useState(true);
     const [search, setSearch] = useState('');
+    const [listType, setListType] = useState('Veg');
     
     // Modal states
     const [showManageModal, setShowManageModal] = useState(false);
@@ -137,7 +138,7 @@ export default function VegList() {
         try {
             const { error } = await supabase
                 .from('students')
-                .update({ mess_type: makeVeg ? 'Veg' : 'Non-Veg' })
+                .update({ mess_type: makeVeg ? 'V' : 'N' })
                 .eq('mess_number', messNumber)
                 .eq('hostel_id', user.hostelId);
                 
@@ -151,9 +152,12 @@ export default function VegList() {
         }
     };
 
-    const vegStudents = students.filter(s => s.messType === 'Veg');
+    const isVeg = (type) => type === 'Veg' || type?.startsWith('V');
+    const vegStudents = students.filter(s => isVeg(s.messType));
+    const nonVegStudents = students.filter(s => !isVeg(s.messType));
+    const currentStudents = listType === 'Veg' ? vegStudents : nonVegStudents;
     
-    const filteredOutList = vegStudents.filter(s => {
+    const filteredOutList = currentStudents.filter(s => {
         return s.name.toLowerCase().includes(search.toLowerCase()) || 
                s.messNumber.toLowerCase().includes(search.toLowerCase());
     }).sort((a, b) => 
@@ -170,9 +174,9 @@ export default function VegList() {
                         <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
                             <Leaf className="w-5 h-5 text-green-600" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Veg List</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{listType} List</h1>
                     </div>
-                    <p className="text-gray-500 mt-2">Track daily vegetarian food consumption to prevent duplicate claims.</p>
+                    <p className="text-gray-500 mt-2">Track daily {listType.toLowerCase()} food consumption to prevent duplicate claims.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     <Badge variant="outline" className="px-3 py-1.5 bg-white shadow-sm border-gray-200 gap-2">
@@ -185,15 +189,33 @@ export default function VegList() {
                 </div>
             </div>
 
-            <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent max-w-sm transition-all">
-                <Search className="w-4 h-4 text-gray-400 shrink-0 mr-2" />
-                <input
-                    type="text"
-                    placeholder="Search veg list..."
-                    className="w-full bg-transparent outline-none text-sm"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-1 items-center bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent max-w-sm transition-all">
+                    <Search className="w-4 h-4 text-gray-400 shrink-0 mr-2" />
+                    <input
+                        type="text"
+                        placeholder={`Search ${listType.toLowerCase()} list...`}
+                        className="w-full bg-transparent outline-none text-sm"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                </div>
+                <div className="flex gap-2">
+                    {['Veg', 'Non-Veg'].map(type => (
+                        <button
+                            key={type}
+                            onClick={() => setListType(type)}
+                            className={cn(
+                                "px-4 py-2 rounded-lg text-sm font-medium border transition-colors",
+                                listType === type
+                                    ? "bg-gray-900 text-white border-gray-900"
+                                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                            )}
+                        >
+                            {type}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {loadingAttendance ? (
@@ -282,7 +304,7 @@ export default function VegList() {
                             {filteredOutList.length === 0 && (
                                 <div className="p-12 text-center text-gray-500">
                                     <Leaf className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                                    <p>No vegetarian students found.</p>
+                                    <p>No {listType.toLowerCase()} students found.</p>
                                 </div>
                             )}
                         </div>
@@ -334,23 +356,23 @@ export default function VegList() {
                                             <p className="font-semibold text-gray-900">{manageStudentResult.name}</p>
                                             <div className="flex items-center justify-between">
                                                 <p className="text-sm text-gray-500">{manageStudentResult.messNumber}</p>
-                                                <Badge variant="outline" className={manageStudentResult.messType === 'Veg' ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500 border-gray-200 bg-white'}>
-                                                    Current: {manageStudentResult.messType || 'Veg'}
+                                                <Badge variant="outline" className={isVeg(manageStudentResult.messType) ? 'text-green-600 border-green-200 bg-green-50' : 'text-gray-500 border-gray-200 bg-white'}>
+                                                    Current: {manageStudentResult.messType || 'V'}
                                                 </Badge>
                                             </div>
                                         </div>
                                         
                                         <Button 
-                                            onClick={() => toggleVegStatus(manageStudentResult.messNumber, manageStudentResult.messType !== 'Veg')}
+                                            onClick={() => toggleVegStatus(manageStudentResult.messNumber, !isVeg(manageStudentResult.messType))}
                                             disabled={isUpdating}
-                                            variant={manageStudentResult.messType === 'Veg' ? 'destructive' : 'default'}
+                                            variant={isVeg(manageStudentResult.messType) ? 'destructive' : 'default'}
                                             className={cn(
                                                 "w-full", 
-                                                manageStudentResult.messType !== 'Veg' ? "bg-green-600 hover:bg-green-700 text-white" : ""
+                                                !isVeg(manageStudentResult.messType) ? "bg-green-600 hover:bg-green-700 text-white" : ""
                                             )}
                                         >
                                             {isUpdating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                            {manageStudentResult.messType === 'Veg' ? 'Remove from Veg List' : 'Add to Veg List'}
+                                            {isVeg(manageStudentResult.messType) ? 'Remove from Veg List' : 'Add to Veg List'}
                                         </Button>
                                     </div>
                                 ) : (

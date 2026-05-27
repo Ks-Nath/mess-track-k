@@ -8,11 +8,12 @@ import { supabase } from '../lib/supabaseClient';
 import { getISTDate, getISTDateString } from '../lib/utils';
 
 export default function AdminSettings() {
-    const { messRate, cutoffTime, establishmentFee, hostelName, updateSettings, loading } = useHostel();
+    const { messRate, cutoffTime, establishmentFee, advanceFee, hostelName, updateSettings, loading } = useHostel();
 
     const [rate, setRate] = useState(messRate);
     const [cutoff, setCutoff] = useState(cutoffTime);
     const [estFee, setEstFee] = useState(establishmentFee);
+    const [advFee, setAdvFee] = useState(advanceFee);
     const [isSaving, setIsSaving] = useState(false);
     const [isBackingUp, setIsBackingUp] = useState(false);
 
@@ -21,7 +22,8 @@ export default function AdminSettings() {
         setRate(messRate);
         setCutoff(cutoffTime);
         setEstFee(establishmentFee);
-    }, [messRate, cutoffTime, establishmentFee]);
+        setAdvFee(advanceFee);
+    }, [messRate, cutoffTime, establishmentFee, advanceFee]);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -31,6 +33,7 @@ export default function AdminSettings() {
             messRate: parseInt(rate),
             cutoffTime: parseInt(cutoff),
             establishmentFee: parseInt(estFee),
+            advanceFee: parseInt(advFee),
         });
 
         if (result.success) {
@@ -185,6 +188,31 @@ export default function AdminSettings() {
                                 )}
                             </div>
                             <p className="text-xs text-gray-400">Fixed monthly establishment fee per student.</p>
+                        </div>
+
+                        <div className="border-t border-gray-100" />
+
+                        {/* Advance Fee */}
+                        <div className="space-y-3">
+                            <label className="block text-sm font-semibold text-gray-700">Monthly Advance Fee</label>
+                            <div className="relative max-w-xs">
+                                {loading ? (
+                                    <div className="h-11 w-full bg-gray-100 rounded-xl animate-pulse" />
+                                ) : (
+                                    <>
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm pointer-events-none">₹</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={advFee}
+                                            onChange={(e) => setAdvFee(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 focus:bg-white transition-all"
+                                            required
+                                        />
+                                    </>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-400">Fixed monthly advance fee per student.</p>
                         </div>
 
                         <div className="border-t border-gray-100" />

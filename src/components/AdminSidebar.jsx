@@ -9,7 +9,8 @@ import {
     FileSpreadsheet,
     Settings,
     Leaf,
-    Landmark
+    Landmark,
+    PieChart
 } from 'lucide-react';
 import { Separator } from './ui/separator';
 
@@ -17,6 +18,7 @@ const navItems = [
     { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/admin/menu', label: 'Manage Menu', icon: UtensilsCrossed },
     { to: '/admin/students', label: 'Students', icon: Users },
+    { to: '/admin/food-count', label: 'Food Count', icon: PieChart },
     { to: '/admin/veg-list', label: 'Veg List', icon: Leaf },
     { to: '/admin/leaves', label: 'Leave Reports', icon: Bell },
     { to: '/admin/bills', label: 'Finance', icon: FileSpreadsheet },
