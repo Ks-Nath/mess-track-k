@@ -14,8 +14,8 @@ const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/dashboard/menu', label: 'Mess Menu', icon: UtensilsCrossed },
     { to: '/dashboard/leave', label: 'Leave', icon: CalendarOff },
-    { to: '/dashboard/bill', label: 'Mess Bill', icon: Receipt },
-    { to: '/dashboard/establishment', label: 'Establishment', icon: Landmark },
+    { to: '/dashboard/bill', label: 'Monthly Bill', icon: Receipt },
+    { to: '/dashboard/establishment', label: 'Fines', icon: Landmark },
     { to: '/dashboard/profile', label: 'Profile', icon: User },
 ];
 

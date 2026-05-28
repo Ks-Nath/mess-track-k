@@ -127,10 +127,10 @@ export default function Establishment() {
             {/* Header */}
             <div>
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
-                    Establishment
+                    Fines
                 </h1>
                 <p className="text-gray-500 mt-2">
-                    View your Establishment fees and pending fines
+                    View your pending fines and payment history
                 </p>
             </div>
 
