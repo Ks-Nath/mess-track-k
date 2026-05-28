@@ -244,8 +244,8 @@ export function EstablishmentProvider({ children }) {
         }
         
         if (feeType === 'mess') {
-            // Shift the mess deadline from the 1st to the 5th of the month
-            if (referenceDate.getDate() < 5) {
+            // Shift the mess deadline from the 1st to the 5th of the month (late fine starts on the 6th)
+            if (referenceDate.getDate() <= 5) {
                 monthsLate -= 1;
             }
             return monthsLate >= 2 ? (monthsLate - 1) * 50 : 0;
