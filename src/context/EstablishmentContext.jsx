@@ -237,12 +237,6 @@ export function EstablishmentProvider({ children }) {
         let monthsLate = getMonthsLate(month, referenceDate);
         if (monthsLate === 0) return 0;
         
-        if (feeType === 'establishment') return 0;
-        
-        if (feeType === 'advance') {
-            return monthsLate >= 1 ? 30 : 0;
-        }
-        
         if (feeType === 'mess') {
             // Shift the mess deadline from the 1st to the 5th of the month (late fine starts on the 6th)
             if (referenceDate.getDate() <= 5) {

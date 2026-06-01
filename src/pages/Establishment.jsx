@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabaseClient';
 
 export default function Establishment() {
     const { user } = useAuth();
-    const { establishmentFee, advanceFee } = useHostel();
+    const { establishmentFee } = useHostel();
     const { getStudentPayments, calculateFineForStudent, calculateFineForMonth, loading } = useEstablishment();
 
     // Default to prior month since we usually collect fees after the month ends
@@ -77,11 +77,9 @@ export default function Establishment() {
     // Get current month's explicitly requested records
     const currentMessPayment = studentPayments.find(p => p.month === selectedMonth && p.feeType === 'mess');
     const currentEstPayment = studentPayments.find(p => p.month === selectedMonth && p.feeType === 'establishment');
-    const currentAdvPayment = studentPayments.find(p => p.month === selectedMonth && p.feeType === 'advance');
 
     const isMessPaid = currentMessPayment?.isPaid || false;
     const isEstPaid = currentEstPayment?.isPaid || false;
-    const isAdvancePaid = currentAdvPayment?.isPaid || false;
 
     // Determine effective join date (fallback if DB field is null)
     const effectiveJoinDate = liveUser.joinDate 
@@ -92,8 +90,7 @@ export default function Establishment() {
     // Fines calculate across ALL history dynamically based on payment status + dates
     const totalMessFine = calculateFineForStudent(liveUser.id, effectiveJoinDate, 'mess');
     const totalEstFine = calculateFineForStudent(liveUser.id, effectiveJoinDate, 'establishment');
-    const totalAdvFine = calculateFineForStudent(liveUser.id, effectiveJoinDate, 'advance');
-    const overallFine = totalMessFine + totalEstFine + totalAdvFine + (liveUser.legacyFines || 0);
+    const overallFine = totalMessFine + totalEstFine + (liveUser.legacyFines || 0);
 
     // Helper to get all months between two dates in YYYY-MM format.
     const getMonthsInRangeLocal = (startDateStr, endDate = getISTDate()) => {
@@ -117,8 +114,7 @@ export default function Establishment() {
         return {
             month,
             mess: studentPayments.find(p => p.month === month && p.feeType === 'mess'),
-            est: studentPayments.find(p => p.month === month && p.feeType === 'establishment'),
-            adv: studentPayments.find(p => p.month === month && p.feeType === 'advance')
+            est: studentPayments.find(p => p.month === month && p.feeType === 'establishment')
         };
     }).sort((a, b) => b.month.localeCompare(a.month));
 
@@ -162,10 +158,6 @@ export default function Establishment() {
                                     <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold block">Est. Fine</span>
                                     <span className="text-sm font-bold text-red-600">₹{totalEstFine}</span>
                                 </div>
-                                <div className="px-3 py-1.5 bg-white/60 rounded-lg border border-red-100 shadow-sm">
-                                    <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold block">Advance Fine</span>
-                                    <span className="text-sm font-bold text-red-600">₹{totalAdvFine}</span>
-                                </div>
                                 {user.legacyFines > 0 && (
                                     <div className="px-3 py-1.5 bg-amber-50 rounded-lg border border-amber-100 shadow-sm">
                                         <span className="text-[10px] uppercase tracking-wider text-amber-600 font-bold block">Past Fines</span>
@@ -191,24 +183,6 @@ export default function Establishment() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="divide-y divide-gray-100">
-                        {/* Advance Fee Row */}
-                        <div className="flex items-center justify-between p-5">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-emerald-50 rounded-lg">
-                                    <Landmark className="w-5 h-5 text-emerald-600" />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">Advance Fee (₹{advanceFee})</p>
-                                    <p className="text-xs text-gray-500">Fixed monthly advance</p>
-                                </div>
-                            </div>
-                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                isAdvancePaid ? 'bg-emerald-100 text-emerald-700' : 'bg-red-50 text-red-600'
-                            }`}>
-                                {isAdvancePaid ? 'PAID' : 'UNPAID'}
-                            </span>
-                        </div>
-                        
                         {/* Mess Fee Row */}
                         <div className="flex items-center justify-between p-5">
                             <div className="flex items-center gap-3">
@@ -262,7 +236,6 @@ export default function Establishment() {
                             <thead className="bg-gray-50 text-gray-700 font-medium border-b border-gray-200">
                                 <tr>
                                     <th className="px-6 py-4">Month</th>
-                                    <th className="px-6 py-4 text-center">Advance Fee</th>
                                     <th className="px-6 py-4 text-center">Mess Fee</th>
                                     <th className="px-6 py-4 text-center">Est. Fee</th>
                                     <th className="px-6 py-4 text-right">Fine Incurred</th>
@@ -272,25 +245,15 @@ export default function Establishment() {
                                 {historyArray.map((row) => {
                                     const mPaid = row.mess?.isPaid;
                                     const ePaid = row.est?.isPaid;
-                                    const aPaid = row.adv?.isPaid;
                                     
                                     const mFine = !mPaid ? calculateFineForMonth(row.month, 'mess') : 0;
                                     const eFine = !ePaid ? calculateFineForMonth(row.month, 'establishment') : 0;
-                                    const aFine = !aPaid ? calculateFineForMonth(row.month, 'advance') : 0;
-                                    const thisMonthFine = mFine + eFine + aFine;
+                                    const thisMonthFine = mFine + eFine;
 
                                     return (
                                         <tr key={row.month} className="hover:bg-gray-50/50 transition-colors">
                                             <td className="px-6 py-4 font-medium text-gray-900">
                                                 {new Date(row.month + '-01').toLocaleString('default', { month: 'short', year: 'numeric' })}
-                                            </td>
-                                            
-                                            <td className="px-6 py-4 text-center">
-                                                {aPaid ? (
-                                                    <span className="text-emerald-600 font-medium text-xs">Paid on {row.adv?.paidDate}</span>
-                                                ) : (
-                                                    <span className="text-red-500 font-medium text-xs">— Pending —</span>
-                                                )}
                                             </td>
                                             
                                             <td className="px-6 py-4 text-center">

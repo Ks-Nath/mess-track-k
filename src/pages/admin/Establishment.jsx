@@ -22,7 +22,7 @@ export default function AdminEstablishment() {
 
     // Data handling
     const { students, updateLegacyFine } = useStudents();
-    const { establishmentFee, advanceFee, establishmentPasscode } = useHostel();
+    const { establishmentFee, establishmentPasscode } = useHostel();
     const {
         payments,
         markAsPaid,
@@ -85,7 +85,7 @@ export default function AdminEstablishment() {
     // Calculate Summary Stats
     const totalCollected = payments.filter(p => p.isPaid).length * establishmentFee; // Basic estimation
     const pendingFines = students.reduce((sum, s) => {
-        return sum + calculateFineForStudent(s.id, s.joinDate, 'mess') + calculateFineForStudent(s.id, s.joinDate, 'establishment') + calculateFineForStudent(s.id, s.joinDate, 'advance') + (s.legacyFines || 0);
+        return sum + calculateFineForStudent(s.id, s.joinDate, 'mess') + calculateFineForStudent(s.id, s.joinDate, 'establishment') + (s.legacyFines || 0);
     }, 0);
 
     const filteredStudents = students.filter(s => 
@@ -97,7 +97,6 @@ export default function AdminEstablishment() {
     const getStudentStatusForMonth = (student, month = selectedMonth) => {
         const isMessPaid = getPaymentStatus(student.id, month, 'mess');
         const isEstPaid = getPaymentStatus(student.id, month, 'establishment');
-        const isAdvancePaid = getPaymentStatus(student.id, month, 'advance');
         
         // Stricter Enrollment Check: Student must have a join date <= report month
         const studentJoinMonth = student.joinDate ? student.joinDate.slice(0, 7) : null;
@@ -105,22 +104,18 @@ export default function AdminEstablishment() {
         
         const messFine = (isEnrolled && !isMessPaid) ? calculateFineForMonth(month, 'mess') : 0;
         const estFine = (isEnrolled && !isEstPaid) ? calculateFineForMonth(month, 'establishment') : 0;
-        const advFine = (isEnrolled && !isAdvancePaid) ? calculateFineForMonth(month, 'advance') : 0;
         
         const cumulativeFine = calculateFineForStudent(student.id, student.joinDate, 'mess') + 
                               calculateFineForStudent(student.id, student.joinDate, 'establishment') + 
-                              calculateFineForStudent(student.id, student.joinDate, 'advance') + 
                               (student.legacyFines || 0);
         
         return {
             isMessPaid,
             isEstPaid,
-            isAdvancePaid,
             isEnrolled,
             messFine,
             estFine,
-            advFine,
-            monthFines: messFine + estFine + advFine,
+            monthFines: messFine + estFine,
             totalFines: cumulativeFine
         };
     };
@@ -134,7 +129,6 @@ export default function AdminEstablishment() {
             return {
                 "Mess No": student.messNumber,
                 "Student Name": student.name,
-                "Advance Fee": status.isAdvancePaid ? 'PAID' : 'UNPAID',
                 "Mess Fee": status.isMessPaid ? 'PAID' : 'UNPAID',
                 "Establishment Fee": status.isEstPaid ? 'PAID' : 'UNPAID',
                 "Legacy Fines": student.legacyFines || 0,
@@ -146,7 +140,7 @@ export default function AdminEstablishment() {
         const ws = XLSX.utils.json_to_sheet(data);
         // Auto-size columns slightly
         const wscols = [
-            {wch: 10}, {wch: 25}, {wch: 15}, {wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}
+            {wch: 10}, {wch: 25}, {wch: 15}, {wch: 20}, {wch: 12}, {wch: 12}, {wch: 12}
         ];
         ws['!cols'] = wscols;
 
@@ -320,7 +314,6 @@ export default function AdminEstablishment() {
                             <tr>
                                 <th className="px-6 py-4">Mess No</th>
                                 <th className="px-6 py-4">Student Name</th>
-                                <th className="px-6 py-4 text-center">Advance Fee</th>
                                 <th className="px-6 py-4 text-center">Mess Fee</th>
                                 <th className="px-6 py-4 text-center">Establishment Fee</th>
                                 <th className="px-6 py-4 text-center">Past Fines</th>
@@ -337,19 +330,7 @@ export default function AdminEstablishment() {
                                         <td className="px-6 py-4 font-medium text-gray-900">{student.messNumber}</td>
                                         <td className="px-6 py-4 text-gray-600">{student.name}</td>
                                         
-                                        {/* Advance Fee Toggle */}
-                                        <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={() => handleTogglePayment(student.id, student.messNumber, 'advance', status.isAdvancePaid)}
-                                                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                                                    status.isAdvancePaid 
-                                                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' 
-                                                    : 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                                                }`}
-                                            >
-                                                {status.isAdvancePaid ? 'PAID' : 'UNPAID'}
-                                            </button>
-                                        </td>
+
                                         
                                         {/* Mess Fee Toggle */}
                                         <td className="px-6 py-4 text-center">
