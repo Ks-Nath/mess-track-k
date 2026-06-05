@@ -34,7 +34,7 @@ export function LeaveProvider({ children }) {
             let query = supabase
                 .from('leaves')
                 .select('leave_date, mess_number, is_admin_granted')
-                .eq('status', 'Approved')
+                .in('status', ['Approved', 'Admin_Override'])
                 .eq('hostel_id', user.hostelId)
                 .range(from, from + PAGE_SIZE - 1);
 
